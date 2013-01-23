@@ -1,0 +1,30 @@
+{
+  "devMode": true,
+  "version": "0.1",
+  "name": "Pixlr",
+  "identifier": "com.koding.apps.pixlr",
+  "path": "~/Applications/Pixlr.kdapp",
+  "homepage": "fatihacet.koding.com/pixlr",
+  "author": "Fatih Acet",
+  "repository": "git://github.com/fatihacet/pixlr.kdapp.git",
+  "description": "Pixlr : a Koding application created with the sample template.",
+  "category": "web-app",
+  "source": {
+    "blocks": {
+      "app": {
+        "files": [
+          "./index.coffee"
+        ]
+      }
+    },
+    "stylesheets": [
+      "./resources/style.css"
+    ]
+  },
+  "options": {
+    "type": "tab"
+  },
+  "icns": {
+    "128": "./resources/icon.128.png"
+  }
+}
