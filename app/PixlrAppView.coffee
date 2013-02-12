@@ -19,9 +19,8 @@ class PixlrAppView extends JView
     @init()
     
     @dropTarget.on "drop", (e) =>
-      @openImage e.originalEvent.dataTransfer.getData("Text")
+      @openImage e.originalEvent.dataTransfer.getData 'Text'
       
-    
   init: ->
     @container.setPartial @buildIframe()
     
@@ -33,8 +32,9 @@ class PixlrAppView extends JView
         @dropTarget.hide() if event.type is "drop"
         
     path    = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
-    command = "mkdir -p #{path} ; mkdir -p #{PixlrSettings.savePath} ; ln -s /Users/#{nickname}/Applications/Pixlr.kdapp/app/PixlrHook.php #{path}"
-    @doKiteRequest "#{command}"
+    command = "mkdir -p #{path} ; mkdir -p #{PixlrSettings.savePath} ; ln -s /Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php #{path}"
+    @doKiteRequest "#{command}", (req) ->
+      
     
     @doKiteRequest "curl http://#{nickname}.koding.com/PixlrHook/PixlrHook.php?ping=1", (res) =>
       @warnUser() unless res is "OK"
@@ -109,15 +109,14 @@ class PixlrAppView extends JView
   doKiteRequest: (command, callback) ->
     KD.getSingleton('kiteController').run command, (err, res) =>
       unless err
-        callback(res) if callback
+        callback res if callback
       else
         if callback
-          return callback(res) 
+          return callback res 
         new KDNotificationView
           title    : "An error occured while processing your request, try again please!"
           type     : "mini"
           duration : 3000
-    
     
   pistachio: ->
     """
