@@ -1,21 +1,26 @@
-// Compiled by Koding Servers at Mon Feb 11 2013 20:03:47 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Mon Feb 11 2013 23:20:11 GMT-0800 (PST) in server time
 
 (function() {
 
 /* KDAPP STARTS */
 
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/Pixlr.kdapp/app/PixlrSettings.coffee */
+/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrSettings.coffee */
 
-var PixlrSettings, nickname;
+var PixlrSettings, appKeyword, appName, nickname;
 
 nickname = KD.whoami().profile.nickname;
 
+appName = 'PixlrEditor';
+
+appKeyword = 'editor';
+
 PixlrSettings = {
-  src: "https://pixlr.com/editor",
+  appName: appName,
+  src: "https://pixlr.com/" + appKeyword,
   image: "https://dl.dropbox.com/u/31049236/nat-geo.jpeg",
   saveIcon: "https://dl.dropbox.com/u/31049236/koding16.png",
   targetPath: "https://" + nickname + ".koding.com/PixlrHook/PixlrHook.php",
-  savePath: "/Users/" + nickname + "/Documents/Pixlr/",
+  savePath: "/Users/" + nickname + "/Documents/" + appName + "/",
   imageName: "Default",
   fileExt: "jpg"
 };
@@ -25,13 +30,15 @@ PixlrSettings = {
 
 
 
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/Pixlr.kdapp/app/PixlrAppView.coffee */
+/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrAppView.coffee */
 
 var PixlrAppView, nickname,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 nickname = KD.whoami().profile.nickname;
+
+KD.enableLogs();
 
 PixlrAppView = (function(_super) {
 
@@ -52,7 +59,7 @@ PixlrAppView = (function(_super) {
     this.dropTarget.hide();
     this.init();
     this.dropTarget.on("drop", function(e) {
-      return _this.openImage(e.originalEvent.dataTransfer.getData("Text"));
+      return _this.openImage(e.originalEvent.dataTransfer.getData('Text'));
     });
   }
 
@@ -71,8 +78,8 @@ PixlrAppView = (function(_super) {
       }
     });
     path = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/PixlrHook/";
-    command = "mkdir -p " + path + " ; mkdir -p " + PixlrSettings.savePath + " ; ln -s /Users/" + nickname + "/Applications/Pixlr.kdapp/app/PixlrHook.php " + path;
-    this.doKiteRequest("" + command);
+    command = "mkdir -p " + path + " ; mkdir -p " + PixlrSettings.savePath + " ; ln -s /Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php " + path;
+    this.doKiteRequest("" + command, function(req) {});
     this.doKiteRequest("curl http://" + nickname + ".koding.com/PixlrHook/PixlrHook.php?ping=1", function(res) {
       if (res !== "OK") {
         return _this.warnUser();
@@ -135,6 +142,7 @@ PixlrAppView = (function(_super) {
   PixlrAppView.prototype.doKiteRequest = function(command, callback) {
     var _this = this;
     return KD.getSingleton('kiteController').run(command, function(err, res) {
+      console.log(res, err);
       if (!err) {
         if (callback) {
           return callback(res);
@@ -165,7 +173,7 @@ PixlrAppView = (function(_super) {
 
 
 
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/Pixlr.kdapp/index.coffee */
+/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/index.coffee */
 
 
 (function() {
