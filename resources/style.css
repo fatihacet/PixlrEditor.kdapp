@@ -1,3 +1,18 @@
 .kdview.pixlr .application-page {
   padding: 0 !important;
 }
+.kdview .pixlr-drop-target {
+  position: absolute;
+  background: rgba(20, 20, 17, 0.74);
+  opacity: 0.6;
+}
+.pixlr-how-to {
+  padding: 20px;
+}
+.pixlr-how-to p {
+  margin-bottom: 10px;
+  width: 364px;
+}
+.pixlr-how-to .last {
+  margin-top: 20px;
+}
