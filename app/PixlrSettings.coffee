@@ -1,3 +1,5 @@
+{nickname} = KD.whoami().profile
+
 PixlrSettings =
   src        : "https://pixlr.com/editor"
   image      : "https://dl.dropbox.com/u/31049236/nat-geo.jpeg"
