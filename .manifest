@@ -7,12 +7,14 @@
   "homepage": "fatihacet.koding.com/pixlr",
   "author": "Fatih Acet",
   "repository": "git://github.com/fatihacet/pixlr.kdapp.git",
-  "description": "Pixlr : a Koding application created with the sample template.",
+  "description": "Pixlr: Pixlr image editing application",
   "category": "web-app",
   "source": {
     "blocks": {
       "app": {
         "files": [
+          "./app/PixlrSettings.coffee",
+          "./app/PixlrAppView.coffee",
           "./index.coffee"
         ]
       }
