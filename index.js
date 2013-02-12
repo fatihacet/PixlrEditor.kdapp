@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Mon Feb 11 2013 18:18:36 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Mon Feb 11 2013 20:03:47 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -6,7 +6,9 @@
 
 /* BLOCK STARTS /Source: /Users/fatihacet/Applications/Pixlr.kdapp/app/PixlrSettings.coffee */
 
-var PixlrSettings;
+var PixlrSettings, nickname;
+
+nickname = KD.whoami().profile.nickname;
 
 PixlrSettings = {
   src: "https://pixlr.com/editor",
