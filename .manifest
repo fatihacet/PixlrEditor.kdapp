@@ -1,13 +1,13 @@
 {
   "devMode": true,
   "version": "0.1",
-  "name": "Pixlr",
-  "identifier": "com.koding.apps.pixlr",
-  "path": "~/Applications/Pixlr.kdapp",
-  "homepage": "fatihacet.koding.com/pixlr",
+  "name": "Pixlr Editor",
+  "identifier": "com.koding.apps.pixlreditor",
+  "path": "~/Applications/PixlrEditor.kdapp",
+  "homepage": "fatihacet.koding.com/pixlreditor",
   "author": "Fatih Acet",
-  "repository": "git://github.com/fatihacet/pixlr.kdapp.git",
-  "description": "Pixlr: Pixlr image editing application",
+  "repository": "git://github.com/fatihacet/pixlreditor.kdapp.git",
+  "description": "Pixlr Editor: Pixlr image editing application",
   "category": "web-app",
   "source": {
     "blocks": {
