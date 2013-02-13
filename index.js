@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Tue Feb 12 2013 21:52:52 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Wed Feb 13 2013 11:51:25 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -37,8 +37,6 @@ var PixlrAppView, nickname,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 nickname = KD.whoami().profile.nickname;
-
-KD.enableLogs();
 
 PixlrAppView = (function(_super) {
 
@@ -88,7 +86,7 @@ PixlrAppView = (function(_super) {
     this.appStorage = new AppStorage(PixlrSettings.appName, '1.0');
     return this.appStorage.fetchStorage(function(storage) {
       var content, disableNotificationButton, modal;
-      if (!_this.appStorage.getValue('disableNotification')) {
+      if (_this.appStorage.getValue('disableNotification')) {
         return;
       }
       content = new KDView({
@@ -97,6 +95,7 @@ PixlrAppView = (function(_super) {
       content.addSubView(disableNotificationButton = new KDCustomHTMLView({
         tagName: "a",
         partial: "Don't show it again!",
+        cssClass: "pixlr-disable-notification",
         click: function() {
           _this.appStorage.setValue('disableNotification', true);
           return modal.destroy();
@@ -153,7 +152,7 @@ PixlrAppView = (function(_super) {
     return new KDModalView({
       title: "Cannot save!",
       overlay: true,
-      content: "Pixlr cannot access the little php file it needs \nto be able to save files (./website/PixlrHook/pixlrHook.php)\nYou either deleted it, or made it inaccessible somehow (think .htaccess)\n\nReinstalling Pixlr might fix it, but not guaranteed.\n\nIf you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)"
+      content: "<div class=\"pixlr-cannot-save\">\n  Pixlr cannot access the little php file it needs \n  to be able to save files (./website/PixlrHook/pixlrHook.php)\n  You either deleted it, or made it inaccessible somehow (think .htaccess)\n  \n  Reinstalling Pixlr might fix it, but not guaranteed.\n  \n  If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)\n</div>"
     });
   };
 
