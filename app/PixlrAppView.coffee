@@ -55,9 +55,10 @@ class PixlrAppView extends JView
           </div>
         """
       content.addSubView disableNotificationButton = new KDCustomHTMLView
-        tagName : "a"
-        partial : "Don't show it again!"
-        click   : =>
+        tagName  : "a"
+        partial  : "Don't show it again!"
+        cssClass : "pixlr-disable-notification"
+        click    : =>
           @appStorage.setValue 'disableNotification', yes
           modal.destroy()
       
@@ -111,13 +112,15 @@ class PixlrAppView extends JView
       title  : "Cannot save!"
       overlay: yes
       content: """
-        Pixlr cannot access the little php file it needs 
-        to be able to save files (./website/PixlrHook/pixlrHook.php)
-        You either deleted it, or made it inaccessible somehow (think .htaccess)
-        
-        Reinstalling Pixlr might fix it, but not guaranteed.
-        
-        If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)
+        <div class="pixlr-cannot-save">
+          Pixlr cannot access the little php file it needs 
+          to be able to save files (./website/PixlrHook/pixlrHook.php)
+          You either deleted it, or made it inaccessible somehow (think .htaccess)
+          
+          Reinstalling Pixlr might fix it, but not guaranteed.
+          
+          If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)
+        </div>
       """
     
     
