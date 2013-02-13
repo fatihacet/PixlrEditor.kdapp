@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Mon Feb 11 2013 23:20:11 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Tue Feb 12 2013 21:52:52 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -85,10 +85,28 @@ PixlrAppView = (function(_super) {
         return _this.warnUser();
       }
     });
-    return new KDModalView({
-      title: "How to use Pixlr",
-      overlay: true,
-      content: "<div class=\"pixlr-how-to\">\n  <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>\n  <p>2- If you change the name, it will save it to where it came from, with the new name.</p>\n  <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg\"</p>\n  \n  <p class=\"last\">Enjoy! Please clone and make it better :)</p>\n</div>"
+    this.appStorage = new AppStorage(PixlrSettings.appName, '1.0');
+    return this.appStorage.fetchStorage(function(storage) {
+      var content, disableNotificationButton, modal;
+      if (!_this.appStorage.getValue('disableNotification')) {
+        return;
+      }
+      content = new KDView({
+        partial: "<div class=\"pixlr-how-to\">\n  <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>\n  <p>2- If you change the name, it will save it to where it came from, with the new name.</p>\n  <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg\"</p>\n  \n  <p class=\"last\">Enjoy! Please clone and make it better :)</p>\n</div>"
+      });
+      content.addSubView(disableNotificationButton = new KDCustomHTMLView({
+        tagName: "a",
+        partial: "Don't show it again!",
+        click: function() {
+          _this.appStorage.setValue('disableNotification', true);
+          return modal.destroy();
+        }
+      }));
+      modal = new KDModalView({
+        title: "How to use Pixlr",
+        overlay: true
+      });
+      return modal.addSubView(content);
     });
   };
 
@@ -142,7 +160,6 @@ PixlrAppView = (function(_super) {
   PixlrAppView.prototype.doKiteRequest = function(command, callback) {
     var _this = this;
     return KD.getSingleton('kiteController').run(command, function(err, res) {
-      console.log(res, err);
       if (!err) {
         if (callback) {
           return callback(res);
