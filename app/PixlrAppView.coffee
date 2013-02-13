@@ -39,18 +39,33 @@ class PixlrAppView extends JView
     @doKiteRequest "curl http://#{nickname}.koding.com/PixlrHook/PixlrHook.php?ping=1", (res) =>
       @warnUser() unless res is "OK"
       
-    new KDModalView
-      title  : "How to use Pixlr"
-      overlay: yes
-      content: """
-        <div class="pixlr-how-to">
-          <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>
-          <p>2- If you change the name, it will save it to where it came from, with the new name.</p>
-          <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg"</p>
-          
-          <p class="last">Enjoy! Please clone and make it better :)</p>
-        </div>
-      """
+    @appStorage = new AppStorage PixlrSettings.appName, '1.0'
+    
+    @appStorage.fetchStorage (storage) =>
+      return if @appStorage.getValue 'disableNotification'
+      
+      content = new KDView
+        partial: """
+          <div class="pixlr-how-to">
+            <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>
+            <p>2- If you change the name, it will save it to where it came from, with the new name.</p>
+            <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg"</p>
+            
+            <p class="last">Enjoy! Please clone and make it better :)</p>
+          </div>
+        """
+      content.addSubView disableNotificationButton = new KDCustomHTMLView
+        tagName : "a"
+        partial : "Don't show it again!"
+        click   : =>
+          @appStorage.setValue 'disableNotification', yes
+          modal.destroy()
+      
+      modal = new KDModalView
+        title  : "How to use Pixlr"
+        overlay: yes
+      
+      modal.addSubView content
         
         
   openImage: (path) ->
