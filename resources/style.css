@@ -1,4 +1,4 @@
-.kdview.pixlr .application-page {
+.kdview.pixlr-editor .application-page {
   padding: 0 !important;
 }
 .kdview .pixlr-drop-target {
@@ -6,7 +6,8 @@
   background: rgba(20, 20, 17, 0.74);
   opacity: 0.6;
 }
-.pixlr-how-to {
+.pixlr-how-to,
+.pixlr-cannot-save {
   padding: 20px;
 }
 .pixlr-how-to p {
@@ -15,4 +16,10 @@
 }
 .pixlr-how-to .last {
   margin-top: 20px;
+}
+.pixlr-disable-notification {
+  position: relative;
+  top: -20px;
+  float: right;
+  right: 20px;
 }
