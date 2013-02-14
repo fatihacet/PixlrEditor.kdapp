@@ -22,6 +22,7 @@ class PixlrAppView extends JView
       @openImage e.originalEvent.dataTransfer.getData 'Text'
       
   init: ->
+    @mem = +new Date() + Math.floor(Math.random() * 90000) + 10000
     @container.setPartial @buildIframe()
     
     KD.getSingleton("windowController").registerListener
@@ -31,14 +32,17 @@ class PixlrAppView extends JView
         @dropTarget.show()
         @dropTarget.hide() if event.type is "drop"
         
-    path    = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
-    command = "mkdir -p #{path} ; mkdir -p #{PixlrSettings.savePath} ; ln -s /Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php #{path}"
-    @doKiteRequest "#{command}", (req) ->
-      
+    spath   = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php"
+    dpath   = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
+    command = """mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook.php"""
+    KD.enableLogs()
+    console.log command
     
-    @doKiteRequest "curl http://#{nickname}.koding.com/PixlrHook/PixlrHook.php?ping=1", (res) =>
-      @warnUser() unless res is "OK"
-      
+    @doKiteRequest "#{command}", =>
+      cmd = "curl 'http://#{nickname}.koding.com/PixlrHook/PixlrHook.php?ping=1&key=#{@mem}'"
+      @doKiteRequest cmd, (res) =>
+        @warnUser() unless res is "OK"
+  
     @appStorage = new AppStorage PixlrSettings.appName, '1.0'
     
     @appStorage.fetchStorage (storage) =>
@@ -67,8 +71,7 @@ class PixlrAppView extends JView
         overlay: yes
       
       modal.addSubView content
-        
-        
+
   openImage: (path) ->
     fileExt = KD.utils.getFileExtension path 
     if path and KD.utils.getFileType fileExt is "image"
@@ -92,8 +95,7 @@ class PixlrAppView extends JView
 
   buildIframeSrc : (useEscape) -> 
     amp = if useEscape then '&amp;' else '&'
-    """#{PixlrSettings.src}/?image=#{PixlrSettings.image}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}"""
-    
+    """#{PixlrSettings.src}/?image=#{PixlrSettings.image}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
 
   buildIframe: ->
     """
@@ -114,7 +116,7 @@ class PixlrAppView extends JView
       content: """
         <div class="pixlr-cannot-save">
           Pixlr cannot access the little php file it needs 
-          to be able to save files (./website/PixlrHook/pixlrHook.php)
+          to be able to save files (./website/PixlrHook/PixlrHook.php)
           You either deleted it, or made it inaccessible somehow (think .htaccess)
           
           Reinstalling Pixlr might fix it, but not guaranteed.
@@ -126,11 +128,11 @@ class PixlrAppView extends JView
     
   doKiteRequest: (command, callback) ->
     KD.getSingleton('kiteController').run command, (err, res) =>
+      console.log err, res
       unless err
-        callback res if callback
+        callback? res
       else
-        if callback
-          return callback res 
+        callback? res 
         new KDNotificationView
           title    : "An error occured while processing your request, try again please!"
           type     : "mini"

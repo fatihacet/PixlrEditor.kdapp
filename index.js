@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Wed Feb 13 2013 17:43:39 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Wed Feb 13 2013 23:10:57 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -62,8 +62,9 @@ PixlrAppView = (function(_super) {
   }
 
   PixlrAppView.prototype.init = function() {
-    var command, path,
+    var command, dpath, spath,
       _this = this;
+    this.mem = +new Date() + Math.floor(Math.random() * 90000) + 10000;
     this.container.setPartial(this.buildIframe());
     KD.getSingleton("windowController").registerListener({
       KDEventTypes: ["DragEnterOnWindow", "DragExitOnWindow"],
@@ -75,13 +76,19 @@ PixlrAppView = (function(_super) {
         }
       }
     });
-    path = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/PixlrHook/";
-    command = "mkdir -p " + path + " ; mkdir -p " + PixlrSettings.savePath + " ; ln -s /Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php " + path;
-    this.doKiteRequest("" + command, function(req) {});
-    this.doKiteRequest("curl http://" + nickname + ".koding.com/PixlrHook/PixlrHook.php?ping=1", function(res) {
-      if (res !== "OK") {
-        return _this.warnUser();
-      }
+    spath = "/Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php";
+    dpath = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/PixlrHook/";
+    command = "mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ; sed 's/SECRETKEY/" + this.mem + "/' " + spath + " > " + dpath + "PixlrHook.php";
+    KD.enableLogs();
+    console.log(command);
+    this.doKiteRequest("" + command, function() {
+      var cmd;
+      cmd = "curl 'http://" + nickname + ".koding.com/PixlrHook/PixlrHook.php?ping=1&key=" + _this.mem + "'";
+      return _this.doKiteRequest(cmd, function(res) {
+        if (res !== "OK") {
+          return _this.warnUser();
+        }
+      });
     });
     this.appStorage = new AppStorage(PixlrSettings.appName, '1.0');
     return this.appStorage.fetchStorage(function(storage) {
@@ -137,7 +144,7 @@ PixlrAppView = (function(_super) {
   PixlrAppView.prototype.buildIframeSrc = function(useEscape) {
     var amp;
     amp = useEscape ? '&amp;' : '&';
-    return "" + PixlrSettings.src + "/?image=" + PixlrSettings.image + "&title=" + PixlrSettings.imageName + "&target=" + PixlrSettings.targetPath + amp + "meta=" + PixlrSettings.savePath + "&icon=" + PixlrSettings.saveIcon + "&referer=Koding&redirect=false&type=" + PixlrSettings.fileExt;
+    return "" + PixlrSettings.src + "/?image=" + PixlrSettings.image + "&title=" + PixlrSettings.imageName + "&target=" + PixlrSettings.targetPath + amp + "meta=" + PixlrSettings.savePath + "&icon=" + PixlrSettings.saveIcon + "&referer=Koding&redirect=false&type=" + PixlrSettings.fileExt + "&key=" + this.mem;
   };
 
   PixlrAppView.prototype.buildIframe = function() {
@@ -152,20 +159,19 @@ PixlrAppView = (function(_super) {
     return new KDModalView({
       title: "Cannot save!",
       overlay: true,
-      content: "<div class=\"pixlr-cannot-save\">\n  Pixlr cannot access the little php file it needs \n  to be able to save files (./website/PixlrHook/pixlrHook.php)\n  You either deleted it, or made it inaccessible somehow (think .htaccess)\n  \n  Reinstalling Pixlr might fix it, but not guaranteed.\n  \n  If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)\n</div>"
+      content: "<div class=\"pixlr-cannot-save\">\n  Pixlr cannot access the little php file it needs \n  to be able to save files (./website/PixlrHook/PixlrHook.php)\n  You either deleted it, or made it inaccessible somehow (think .htaccess)\n  \n  Reinstalling Pixlr might fix it, but not guaranteed.\n  \n  If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)\n</div>"
     });
   };
 
   PixlrAppView.prototype.doKiteRequest = function(command, callback) {
     var _this = this;
     return KD.getSingleton('kiteController').run(command, function(err, res) {
+      console.log(err, res);
       if (!err) {
-        if (callback) {
-          return callback(res);
-        }
+        return typeof callback === "function" ? callback(res) : void 0;
       } else {
-        if (callback) {
-          return callback(res);
+        if (typeof callback === "function") {
+          callback(res);
         }
         return new KDNotificationView({
           title: "An error occured while processing your request, try again please!",
