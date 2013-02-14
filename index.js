@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Wed Feb 13 2013 11:51:25 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Wed Feb 13 2013 17:43:39 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -17,8 +17,8 @@ appKeyword = 'editor';
 PixlrSettings = {
   appName: appName,
   src: "https://pixlr.com/" + appKeyword,
-  image: "https://dl.dropbox.com/u/31049236/nat-geo.jpeg",
-  saveIcon: "https://dl.dropbox.com/u/31049236/koding16.png",
+  image: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/istanbul.png",
+  saveIcon: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png",
   targetPath: "https://" + nickname + ".koding.com/PixlrHook/PixlrHook.php",
   savePath: "/Users/" + nickname + "/Documents/" + appName + "/",
   imageName: "Default",
