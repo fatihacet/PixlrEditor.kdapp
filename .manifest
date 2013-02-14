@@ -28,5 +28,11 @@
   },
   "icns": {
     "128": "./resources/icon.128.png"
-  }
+  },
+  "screenshots": [
+    "./resources/1.png",
+    "./resources/2.png",
+    "./resources/3.png",
+    "./resources/4.png"
+  ]
 }
