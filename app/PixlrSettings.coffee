@@ -8,6 +8,7 @@ hookSuffix    = KD.utils.getRandomNumber()
 PixlrSettings =
   hookSuffix : hookSuffix
   appName    : appName
+  appSlug    : appSlug
   src        : "https://pixlr.com/#{appKeyword}"
   image      : "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/istanbul.png"
   saveIcon   : "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png"
