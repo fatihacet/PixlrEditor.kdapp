@@ -6,6 +6,9 @@
   background: rgba(20, 20, 17, 0.74);
   opacity: 0.6;
 }
+.kdview .pixlr-resize-mask {
+  position: absolute;
+}
 .pixlr-how-to,
 .pixlr-cannot-save {
   padding: 20px;
