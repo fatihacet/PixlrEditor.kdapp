@@ -51,12 +51,12 @@ class PixlrAppView extends JView
         @dropTarget.hide() if event.type is "drop"
         
     spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/" # destination path that hook file will be copied
-    command     = """mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"""
+    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    preparation = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"""
+    healthCheck = "curl 'http://#{nickname}.koding.com/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
     
-    @doKiteRequest "#{command}", =>
-      cmd = "curl 'http://#{nickname}.koding.com/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
-      @doKiteRequest cmd, (res) =>
+    @doKiteRequest "#{preparation}", =>
+      @doKiteRequest "#{healthCheck}", (res) =>
         @warnUser() unless res is "OK"
   
     @appStorage = new AppStorage PixlrSettings.appName, '1.0'
