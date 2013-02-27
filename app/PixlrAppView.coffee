@@ -50,8 +50,8 @@ class PixlrAppView extends JView
         @dropTarget.show()
         @dropTarget.hide() if event.type is "drop"
         
-    spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php"
-    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
+    spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
+    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/" # destination path that hook file will be copied
     command     = """mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"""
     
     @doKiteRequest "#{command}", =>
