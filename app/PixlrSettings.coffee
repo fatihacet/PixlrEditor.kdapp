@@ -1,7 +1,8 @@
 {nickname} = KD.whoami().profile
 
-appName       = 'PixlrEditor'
-appKeyword    = 'editor'
+appName       = "PixlrEditor"
+appKeyword    = "editor"
+appSlug       = "pixlr-editor"
 hookSuffix    = KD.utils.getRandomNumber()
 
 PixlrSettings =
