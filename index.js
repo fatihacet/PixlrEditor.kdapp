@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Wed Feb 13 2013 23:10:57 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Wed Feb 27 2013 01:04:17 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -6,7 +6,7 @@
 
 /* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrSettings.coffee */
 
-var PixlrSettings, appKeyword, appName, nickname;
+var PixlrSettings, appKeyword, appName, hookSuffix, nickname;
 
 nickname = KD.whoami().profile.nickname;
 
@@ -14,12 +14,15 @@ appName = 'PixlrEditor';
 
 appKeyword = 'editor';
 
+hookSuffix = KD.utils.getRandomNumber();
+
 PixlrSettings = {
+  hookSuffix: hookSuffix,
   appName: appName,
   src: "https://pixlr.com/" + appKeyword,
   image: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/istanbul.png",
   saveIcon: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png",
-  targetPath: "https://" + nickname + ".koding.com/PixlrHook/PixlrHook.php",
+  targetPath: "https://" + nickname + ".koding.com/PixlrHook/PixlrHook" + hookSuffix + ".php",
   savePath: "/Users/" + nickname + "/Documents/" + appName + "/",
   imageName: "Default",
   fileExt: "jpg"
@@ -38,6 +41,8 @@ var PixlrAppView, nickname,
 
 nickname = KD.whoami().profile.nickname;
 
+KD.enableLogs();
+
 PixlrAppView = (function(_super) {
 
   __extends(PixlrAppView, _super);
@@ -52,19 +57,40 @@ PixlrAppView = (function(_super) {
     this.container = new KDView;
     this.container.addSubView(this.dropTarget = new KDView({
       cssClass: "pixlr-drop-target",
-      bind: "dragstart dragend dragover drop dragenter dragleave"
+      bind: "dragstart dragend dragover drop dragenter dragleave",
+      attributes: {
+        style: "-moz-transition:width 2s; -webkit-transition:width 2s; transition:width 2s"
+      }
     }));
     this.dropTarget.hide();
+    this.container.addSubView(this.resizeMask = new KDView({
+      cssClass: "pixlr-resize-mask"
+    }));
+    this.resizeMask.hide();
+    this.isResizeMaskVisible = false;
     this.init();
     this.dropTarget.on("drop", function(e) {
       return _this.openImage(e.originalEvent.dataTransfer.getData('Text'));
+    });
+    this.lastContainerWidth = this.container.getWidth();
+    KD.utils.repeat(100, function() {
+      var width;
+      width = _this.container.getWidth();
+      if (width !== _this.lastContainerWidth) {
+        _this.resizeMask.show();
+        _this.lastContainerWidth = width;
+        return _this.isResizeMaskVisible = true;
+      } else if (_this.isResizeMaskVisible === true) {
+        _this.resizeMask.hide();
+        return _this.isResizeMaskVisible = false;
+      }
     });
   }
 
   PixlrAppView.prototype.init = function() {
     var command, dpath, spath,
       _this = this;
-    this.mem = +new Date() + Math.floor(Math.random() * 90000) + 10000;
+    this.mem = +new Date() + KD.utils.getRandomNumber();
     this.container.setPartial(this.buildIframe());
     KD.getSingleton("windowController").registerListener({
       KDEventTypes: ["DragEnterOnWindow", "DragExitOnWindow"],
@@ -78,12 +104,10 @@ PixlrAppView = (function(_super) {
     });
     spath = "/Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php";
     dpath = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/PixlrHook/";
-    command = "mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ; sed 's/SECRETKEY/" + this.mem + "/' " + spath + " > " + dpath + "PixlrHook.php";
-    KD.enableLogs();
-    console.log(command);
+    command = "mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ; sed 's/SECRETKEY/" + this.mem + "/' " + spath + " > " + dpath + "PixlrHook" + PixlrSettings.hookSuffix + ".php";
     this.doKiteRequest("" + command, function() {
       var cmd;
-      cmd = "curl 'http://" + nickname + ".koding.com/PixlrHook/PixlrHook.php?ping=1&key=" + _this.mem + "'";
+      cmd = "curl 'http://" + nickname + ".koding.com/PixlrHook/PixlrHook" + PixlrSettings.hookSuffix + ".php?ping=1&key=" + _this.mem + "'";
       return _this.doKiteRequest(cmd, function(res) {
         if (res !== "OK") {
           return _this.warnUser();
@@ -166,7 +190,6 @@ PixlrAppView = (function(_super) {
   PixlrAppView.prototype.doKiteRequest = function(command, callback) {
     var _this = this;
     return KD.getSingleton('kiteController').run(command, function(err, res) {
-      console.log(err, res);
       if (!err) {
         return typeof callback === "function" ? callback(res) : void 0;
       } else {
