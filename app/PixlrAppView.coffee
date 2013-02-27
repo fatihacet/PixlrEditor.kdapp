@@ -11,18 +11,36 @@ class PixlrAppView extends JView
     @container = new KDView
     
     @container.addSubView @dropTarget = new KDView
-      cssClass : "pixlr-drop-target"
-      bind     : "dragstart dragend dragover drop dragenter dragleave"
+      cssClass   : "pixlr-drop-target"
+      bind       : "dragstart dragend dragover drop dragenter dragleave"
       
     @dropTarget.hide()
+    
+    @container.addSubView @resizeMask = new KDView
+      cssClass : "pixlr-resize-mask"
+      
+    @resizeMask.hide()
+    @isResizeMaskVisible = no
     
     @init()
     
     @dropTarget.on "drop", (e) =>
       @openImage e.originalEvent.dataTransfer.getData 'Text'
       
+    @lastContainerWidth = @container.getWidth()
+    
+    KD.utils.repeat 100, =>
+      width = @container.getWidth()
+      if width != @lastContainerWidth
+        @resizeMask.show()
+        @lastContainerWidth = width
+        @isResizeMaskVisible = yes
+      else if @isResizeMaskVisible is yes
+        @resizeMask.hide()
+        @isResizeMaskVisible = no
+  
   init: ->
-    @mem = +new Date() + Math.floor(Math.random() * 90000) + 10000
+    @mem = +new Date() + KD.utils.getRandomNumber()
     @container.setPartial @buildIframe()
     
     KD.getSingleton("windowController").registerListener
@@ -32,14 +50,12 @@ class PixlrAppView extends JView
         @dropTarget.show()
         @dropTarget.hide() if event.type is "drop"
         
-    spath   = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php"
-    dpath   = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
-    command = """mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook.php"""
-    KD.enableLogs()
-    console.log command
+    spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php"
+    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/PixlrHook/"
+    command     = """mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"""
     
     @doKiteRequest "#{command}", =>
-      cmd = "curl 'http://#{nickname}.koding.com/PixlrHook/PixlrHook.php?ping=1&key=#{@mem}'"
+      cmd = "curl 'http://#{nickname}.koding.com/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
       @doKiteRequest cmd, (res) =>
         @warnUser() unless res is "OK"
   
@@ -128,7 +144,6 @@ class PixlrAppView extends JView
     
   doKiteRequest: (command, callback) ->
     KD.getSingleton('kiteController').run command, (err, res) =>
-      console.log err, res
       unless err
         callback? res
       else
