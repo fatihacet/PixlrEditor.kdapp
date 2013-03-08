@@ -44,13 +44,13 @@ class PixlrAppView extends JView
         termsView.addSubView @termsCheckbox = new KDInputView
           type     : "checkbox"
           cssClass : "pixlr-terms-checkbox"
-          label    : @termsCheckboxLabel
+          label    : termsCheckboxLabel
           
         termsView.addSubView warningConfirmButton = new KDButtonView
           title    : "Yes, understand risks!"
           cssClass : "clean-gray pixlr-terms-button"
           callback : =>
-            @appStorage.setValue 'isTermsAccepted', yes
+            @appStorage.setValue 'isTermsAccepted', yes if @termsCheckbox.$().is ":checked"
             termsView.destroy()
             @init()
             
@@ -93,7 +93,7 @@ class PixlrAppView extends JView
         @warnUser() unless res is "OK"
   
     @appStorage.fetchStorage (storage) =>
-      return if @appStorage.getValue 'disableNotification'
+      return if @appStorage.getValue('disableNotification') is yes
       
       content = new KDView
         partial: """
@@ -106,20 +106,29 @@ class PixlrAppView extends JView
             <p class="last">Enjoy! Please clone and make it better :)</p>
           </div>
         """
-      content.addSubView disableNotificationButton = new KDCustomHTMLView
-        tagName  : "a"
-        partial  : "Don't show it again!"
-        cssClass : "pixlr-disable-notification"
-        click    : =>
-          @appStorage.setValue 'disableNotification', yes
+      content.addSubView notificationCheckboxLabel = new KDLabelView
+       title     : "Don't show this again"
+       cssClass  : "pixlr-notification-label"
+      
+      content.addSubView @notificationCheckbox = new KDInputView
+        type     : "checkbox"
+        cssClass : "pixlr-notification-checkbox"
+        label    : notificationCheckboxLabel
+      
+      content.addSubView disableNotificationButton = new KDButtonView
+        title    : "Close"
+        cssClass : "clean-gray"
+        callback : =>
+          @appStorage.setValue 'disableNotification', yes if @notificationCheckbox.$().is ":checked"
           modal.destroy()
       
       modal = new KDModalView
-        title   : "How to use Pixlr Editor"
-        overlay : yes
+        title    : "How to use Pixlr Editor"
+        cssClass : "pixlr-how-to-modal"
+        overlay  : yes
       
       modal.addSubView content
-
+      
 
   openImage: (path) ->
     fileExt = KD.utils.getFileExtension path 
