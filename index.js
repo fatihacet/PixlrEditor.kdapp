@@ -1,8 +1,22 @@
-// Compiled by Koding Servers at Thu Mar 07 2013 18:41:09 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Thu Mar 07 2013 19:31:30 GMT-0800 (PST) in server time
 
 (function() {
 
 /* KDAPP STARTS */
+
+/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrHook.coffee */
+
+var getHookScript,
+  _this = this;
+
+getHookScript = function(SECRETKEY) {
+  return "<?php\n  \n  parse_str($_SERVER['HTTP_REFERER'], $ref);\n  \n  $key=\"" + SECRETKEY + "\";\n  \n  if (array_key_exists(\"key\", $ref)  and $ref[\"key\"]  != $key) return;\n  if (array_key_exists(\"key\", $_GET) and $_GET[\"key\"] != $key) return;\n  \n  if ($_GET[\"ping\"] == \"1\") {\n    echo \"OK\";\n  }\n  else {\n    $fileName = $_GET[\"title\"] . \".\" . $_GET[\"type\"];\n    $targetPath = $ref['meta'];\n    \n    if ($fileName != $ref[\"title\"]) {\n      $exp = explode($ref[\"title\"], $targetPath);\n      $targetPath = $exp[0] . $fileName;\n    }\n    \n    touch($targetPath);\n    $fh = fopen($targetPath, 'w') or die(\"can't open file\");\n    fwrite($fh, file_get_contents($_GET[\"image\"]));\n    fclose($fh);    \n  }\n  \n?>";
+};
+
+
+/* BLOCK ENDS */
+
+
 
 /* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrSettings.coffee */
 
@@ -136,13 +150,21 @@ PixlrAppView = (function(_super) {
     });
     spath = "/Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php";
     dpath = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/.applications/" + PixlrSettings.appSlug + "/PixlrHook/";
-    preparation = "rm -rf " + dpath + " ; mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ; sed 's/SECRETKEY/" + this.mem + "/' " + spath + " > " + dpath + "PixlrHook" + PixlrSettings.hookSuffix + ".php";
+    preparation = "rm -rf " + dpath + " ; mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ";
     healthCheck = "curl 'http://" + nickname + ".koding.com/.applications/" + PixlrSettings.appSlug + "/PixlrHook/PixlrHook" + PixlrSettings.hookSuffix + ".php?ping=1&key=" + this.mem + "'";
     this.doKiteRequest("" + preparation, function() {
-      return _this.doKiteRequest("" + healthCheck, function(res) {
-        if (res !== "OK") {
+      var content, hookFile;
+      content = getHookScript(_this.mem);
+      hookFile = FSHelper.createFileFromPath("" + dpath + "PixlrHook" + PixlrSettings.hookSuffix + ".php");
+      return hookFile.save(content, function(err) {
+        if (err) {
           return _this.warnUser();
         }
+        return _this.doKiteRequest("" + healthCheck, function(res) {
+          if (res !== "OK") {
+            return _this.warnUser();
+          }
+        });
       });
     });
     return this.appStorage.fetchStorage(function(storage) {
