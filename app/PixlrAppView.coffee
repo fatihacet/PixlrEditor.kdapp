@@ -85,12 +85,16 @@ class PixlrAppView extends JView
         
     spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
     dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} ; sed 's/SECRETKEY/#{@mem}/' #{spath} > #{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"""
+    preparation = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} """
     healthCheck = "curl 'http://#{nickname}.koding.com/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
     
     @doKiteRequest "#{preparation}", =>
-      @doKiteRequest "#{healthCheck}", (res) =>
-        @warnUser() unless res is "OK"
+      content = getHookScript @mem
+      hookFile = FSHelper.createFileFromPath "#{dpath}PixlrHook#{PixlrSettings.hookSuffix}.php"
+      hookFile.save content, (err) =>
+        return @warnUser() if err
+        @doKiteRequest "#{healthCheck}", (res) =>
+          @warnUser() unless res is "OK"
   
     @appStorage.fetchStorage (storage) =>
       return if @appStorage.getValue('disableNotification') is yes
