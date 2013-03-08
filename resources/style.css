@@ -14,3 +14,6 @@
 .pixlr-terms-label { position: relative; top: 2px; left: 27px; }
 .pixlr-terms-button { position: relative; left: 92px; }
 .pixlr-terms-view .confirmation { padding: 0px 10px 20px; font-weight: bold; }
+.pixlr-notification-label { position: relative; left: 37px; top: -14px; }
+.pixlr-notification-checkbox { position: relative; top: -22px; left: -103px; }
+.pixlr-how-to-modal button { left: 200px; top: -15px; }
