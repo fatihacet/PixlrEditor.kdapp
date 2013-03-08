@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Thu Mar 07 2013 18:01:30 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Thu Mar 07 2013 18:27:38 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -85,13 +85,15 @@ PixlrAppView = (function(_super) {
         termsView.addSubView(_this.termsCheckbox = new KDInputView({
           type: "checkbox",
           cssClass: "pixlr-terms-checkbox",
-          label: _this.termsCheckboxLabel
+          label: termsCheckboxLabel
         }));
         termsView.addSubView(warningConfirmButton = new KDButtonView({
           title: "Yes, understand risks!",
           cssClass: "clean-gray pixlr-terms-button",
           callback: function() {
-            _this.appStorage.setValue('isTermsAccepted', true);
+            if (_this.termsCheckbox.$().is(":checked")) {
+              _this.appStorage.setValue('isTermsAccepted', true);
+            }
             termsView.destroy();
             return _this.init();
           }
@@ -144,24 +146,35 @@ PixlrAppView = (function(_super) {
       });
     });
     return this.appStorage.fetchStorage(function(storage) {
-      var content, disableNotificationButton, modal;
-      if (_this.appStorage.getValue('disableNotification')) {
+      var content, disableNotificationButton, modal, notificationCheckboxLabel;
+      if (_this.appStorage.getValue('disableNotification') === true) {
         return;
       }
       content = new KDView({
         partial: "<div class=\"pixlr-how-to\">\n  <p><strong>How to use Pixlr Editor</strong></p>\n  <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>\n  <p>2- If you change the name, it will save it to where it came from, with the new name.</p>\n  <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg\"</p>\n  \n  <p class=\"last\">Enjoy! Please clone and make it better :)</p>\n</div>"
       });
-      content.addSubView(disableNotificationButton = new KDCustomHTMLView({
-        tagName: "a",
-        partial: "Don't show it again!",
-        cssClass: "pixlr-disable-notification",
-        click: function() {
-          _this.appStorage.setValue('disableNotification', true);
+      content.addSubView(notificationCheckboxLabel = new KDLabelView({
+        title: "Don't show this again",
+        cssClass: "pixlr-notification-label"
+      }));
+      content.addSubView(_this.notificationCheckbox = new KDInputView({
+        type: "checkbox",
+        cssClass: "pixlr-notification-checkbox",
+        label: notificationCheckboxLabel
+      }));
+      content.addSubView(disableNotificationButton = new KDButtonView({
+        title: "Close",
+        cssClass: "clean-gray",
+        callback: function() {
+          if (_this.notificationCheckbox.$().is(":checked")) {
+            _this.appStorage.setValue('disableNotification', true);
+          }
           return modal.destroy();
         }
       }));
       modal = new KDModalView({
         title: "How to use Pixlr Editor",
+        cssClass: "pixlr-how-to-modal",
         overlay: true
       });
       return modal.addSubView(content);
