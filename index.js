@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Wed Feb 27 2013 12:21:53 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Thu Mar 07 2013 18:01:30 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -55,7 +55,10 @@ PixlrAppView = (function(_super) {
     }
     options.cssClass = "pixlr-container";
     PixlrAppView.__super__.constructor.call(this, options);
-    this.container = new KDView;
+    this.appStorage = new AppStorage(PixlrSettings.appName, '0.1');
+    this.container = new KDView({
+      cssClass: "pixlr-container"
+    });
     this.container.addSubView(this.dropTarget = new KDView({
       cssClass: "pixlr-drop-target",
       bind: "dragstart dragend dragover drop dragenter dragleave"
@@ -66,7 +69,36 @@ PixlrAppView = (function(_super) {
     }));
     this.resizeMask.hide();
     this.isResizeMaskVisible = false;
-    this.init();
+    this.appStorage.fetchStorage(function(storage) {
+      var termsCheckboxLabel, termsView, warningConfirmButton;
+      if (_this.appStorage.getValue('isTermsAccepted') === true) {
+        return _this.init();
+      } else {
+        termsView = new KDView({
+          cssClass: "pixlr-terms-view",
+          partial: "<p class=\"pixlr-terms-header\">Warning</p>\n<p>This app can access and modify your files and also opens unencrypted connection to a third party web service, Pixlr. If you don't want to use the application you can safely close the tab.</p>\n<p class=\"confirmation\">Do you still want to use this application?</p>"
+        });
+        termsView.addSubView(termsCheckboxLabel = new KDLabelView({
+          title: "Don't show this again",
+          cssClass: "pixlr-terms-label"
+        }));
+        termsView.addSubView(_this.termsCheckbox = new KDInputView({
+          type: "checkbox",
+          cssClass: "pixlr-terms-checkbox",
+          label: _this.termsCheckboxLabel
+        }));
+        termsView.addSubView(warningConfirmButton = new KDButtonView({
+          title: "Yes, understand risks!",
+          cssClass: "clean-gray pixlr-terms-button",
+          callback: function() {
+            _this.appStorage.setValue('isTermsAccepted', true);
+            termsView.destroy();
+            return _this.init();
+          }
+        }));
+        return _this.container.addSubView(termsView);
+      }
+    });
     this.dropTarget.on("drop", function(e) {
       return _this.openImage(e.originalEvent.dataTransfer.getData('Text'));
     });
@@ -111,14 +143,13 @@ PixlrAppView = (function(_super) {
         }
       });
     });
-    this.appStorage = new AppStorage(PixlrSettings.appName, '1.0');
     return this.appStorage.fetchStorage(function(storage) {
       var content, disableNotificationButton, modal;
       if (_this.appStorage.getValue('disableNotification')) {
         return;
       }
       content = new KDView({
-        partial: "<div class=\"pixlr-how-to\">\n  <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>\n  <p>2- If you change the name, it will save it to where it came from, with the new name.</p>\n  <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg\"</p>\n  \n  <p class=\"last\">Enjoy! Please clone and make it better :)</p>\n</div>"
+        partial: "<div class=\"pixlr-how-to\">\n  <p><strong>How to use Pixlr Editor</strong></p>\n  <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>\n  <p>2- If you change the name, it will save it to where it came from, with the new name.</p>\n  <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg\"</p>\n  \n  <p class=\"last\">Enjoy! Please clone and make it better :)</p>\n</div>"
       });
       content.addSubView(disableNotificationButton = new KDCustomHTMLView({
         tagName: "a",
@@ -130,7 +161,7 @@ PixlrAppView = (function(_super) {
         }
       }));
       modal = new KDModalView({
-        title: "How to use Pixlr",
+        title: "How to use Pixlr Editor",
         overlay: true
       });
       return modal.addSubView(content);
