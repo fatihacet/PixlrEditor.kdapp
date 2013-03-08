@@ -1,4 +1,4 @@
-// Compiled by Koding Servers at Thu Mar 07 2013 18:27:38 GMT-0800 (PST) in server time
+// Compiled by Koding Servers at Thu Mar 07 2013 18:41:09 GMT-0800 (PST) in server time
 
 (function() {
 
@@ -88,7 +88,7 @@ PixlrAppView = (function(_super) {
           label: termsCheckboxLabel
         }));
         termsView.addSubView(warningConfirmButton = new KDButtonView({
-          title: "Yes, understand risks!",
+          title: "Yes, I know the risk",
           cssClass: "clean-gray pixlr-terms-button",
           callback: function() {
             if (_this.termsCheckbox.$().is(":checked")) {
@@ -206,14 +206,15 @@ PixlrAppView = (function(_super) {
     }
   };
 
-  PixlrAppView.prototype.buildIframeSrc = function(useEscape) {
-    var amp;
+  PixlrAppView.prototype.buildIframeSrc = function(useEscape, isSplashView) {
+    var amp, img;
     amp = useEscape ? '&amp;' : '&';
-    return "" + PixlrSettings.src + "/?image=" + PixlrSettings.image + "&title=" + PixlrSettings.imageName + "&target=" + PixlrSettings.targetPath + amp + "meta=" + PixlrSettings.savePath + "&icon=" + PixlrSettings.saveIcon + "&referer=Koding&redirect=false&type=" + PixlrSettings.fileExt + "&key=" + this.mem;
+    img = isSplashView ? "" : "image=" + PixlrSettings.image;
+    return "" + PixlrSettings.src + "/?" + img + "&title=" + PixlrSettings.imageName + "&target=" + PixlrSettings.targetPath + amp + "meta=" + PixlrSettings.savePath + "&icon=" + PixlrSettings.saveIcon + "&referer=Koding&redirect=false&type=" + PixlrSettings.fileExt + "&key=" + this.mem;
   };
 
   PixlrAppView.prototype.buildIframe = function() {
-    return "<iframe id=\"pixlr\" type=\"text/html\" width=\"100%\" height=\"100%\" frameborder=\"0\" \n  src=\"" + (this.buildIframeSrc(true)) + "\"\n></iframe>";
+    return "<iframe id=\"pixlr\" type=\"text/html\" width=\"100%\" height=\"100%\" frameborder=\"0\" \n  src=\"" + (this.buildIframeSrc(true, true)) + "\"\n></iframe>";
   };
 
   PixlrAppView.prototype.refreshIframe = function() {

@@ -47,7 +47,7 @@ class PixlrAppView extends JView
           label    : termsCheckboxLabel
           
         termsView.addSubView warningConfirmButton = new KDButtonView
-          title    : "Yes, understand risks!"
+          title    : "Yes, I know the risk"
           cssClass : "clean-gray pixlr-terms-button"
           callback : =>
             @appStorage.setValue 'isTermsAccepted', yes if @termsCheckbox.$().is ":checked"
@@ -151,15 +151,16 @@ class PixlrAppView extends JView
           title    : "Dropped file must be an image!"
           
 
-  buildIframeSrc : (useEscape) -> 
+  buildIframeSrc : (useEscape, isSplashView) -> 
     amp = if useEscape then '&amp;' else '&'
-    """#{PixlrSettings.src}/?image=#{PixlrSettings.image}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
+    img = if isSplashView then "" else "image=#{PixlrSettings.image}"
+    """#{PixlrSettings.src}/?#{img}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
 
 
   buildIframe: ->
     """
       <iframe id="pixlr" type="text/html" width="100%" height="100%" frameborder="0" 
-        src="#{@buildIframeSrc yes}"
+        src="#{@buildIframeSrc yes, yes}"
       ></iframe>
     """
     
