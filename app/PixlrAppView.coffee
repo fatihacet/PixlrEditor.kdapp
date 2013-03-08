@@ -8,8 +8,11 @@ class PixlrAppView extends JView
     
     super options
   
-    @container = new KDView
+    @appStorage = new AppStorage PixlrSettings.appName, '0.1'
     
+    @container = new KDView
+      cssClass: "pixlr-container"
+      
     @container.addSubView @dropTarget = new KDView
       cssClass   : "pixlr-drop-target"
       bind       : "dragstart dragend dragover drop dragenter dragleave"
@@ -22,7 +25,36 @@ class PixlrAppView extends JView
     @resizeMask.hide()
     @isResizeMaskVisible = no
     
-    @init()
+    @appStorage.fetchStorage (storage) =>
+      if @appStorage.getValue('isTermsAccepted') is yes
+        @init()
+      else 
+        termsView = new KDView
+          cssClass : "pixlr-terms-view"
+          partial  : """
+            <p class="pixlr-terms-header">Warning</p>
+            <p>This app can access and modify your files and also opens unencrypted connection to a third party web service, Pixlr. If you don't want to use the application you can safely close the tab.</p>
+            <p class="confirmation">Do you still want to use this application?</p>
+          """
+          
+        termsView.addSubView termsCheckboxLabel = new KDLabelView
+         title     : "Don't show this again"
+         cssClass  : "pixlr-terms-label"
+        
+        termsView.addSubView @termsCheckbox = new KDInputView
+          type     : "checkbox"
+          cssClass : "pixlr-terms-checkbox"
+          label    : @termsCheckboxLabel
+          
+        termsView.addSubView warningConfirmButton = new KDButtonView
+          title    : "Yes, understand risks!"
+          cssClass : "clean-gray pixlr-terms-button"
+          callback : =>
+            @appStorage.setValue 'isTermsAccepted', yes
+            termsView.destroy()
+            @init()
+            
+        @container.addSubView termsView
     
     @dropTarget.on "drop", (e) =>
       @openImage e.originalEvent.dataTransfer.getData 'Text'
@@ -38,6 +70,7 @@ class PixlrAppView extends JView
       else if @isResizeMaskVisible is yes
         @resizeMask.hide()
         @isResizeMaskVisible = no
+  
   
   init: ->
     @mem = +new Date() + KD.utils.getRandomNumber()
@@ -59,14 +92,13 @@ class PixlrAppView extends JView
       @doKiteRequest "#{healthCheck}", (res) =>
         @warnUser() unless res is "OK"
   
-    @appStorage = new AppStorage PixlrSettings.appName, '1.0'
-    
     @appStorage.fetchStorage (storage) =>
       return if @appStorage.getValue 'disableNotification'
       
       content = new KDView
         partial: """
           <div class="pixlr-how-to">
+            <p><strong>How to use Pixlr Editor</strong></p>
             <p>1- You can drag and drop an image over pixlr, and when you save it, it will overwrite the original file.</p>
             <p>2- If you change the name, it will save it to where it came from, with the new name.</p>
             <p>3- If you open random images, and save, you can find them at e.g. ./Documents/Pixlr/yourImage.jpg"</p>
@@ -83,10 +115,11 @@ class PixlrAppView extends JView
           modal.destroy()
       
       modal = new KDModalView
-        title  : "How to use Pixlr"
-        overlay: yes
+        title   : "How to use Pixlr Editor"
+        overlay : yes
       
       modal.addSubView content
+
 
   openImage: (path) ->
     fileExt = KD.utils.getFileExtension path 
@@ -112,6 +145,7 @@ class PixlrAppView extends JView
   buildIframeSrc : (useEscape) -> 
     amp = if useEscape then '&amp;' else '&'
     """#{PixlrSettings.src}/?image=#{PixlrSettings.image}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
+
 
   buildIframe: ->
     """
@@ -152,6 +186,7 @@ class PixlrAppView extends JView
           title    : "An error occured while processing your request, try again please!"
           type     : "mini"
           duration : 3000
+    
     
   pistachio: ->
     """
