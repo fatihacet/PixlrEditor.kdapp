@@ -1,28 +1,16 @@
-.kdview.pixlr-editor .application-page {
-  padding: 0 !important;
-}
-.kdview .pixlr-drop-target {
-  position: absolute;
-  background: rgba(20, 20, 17, 0.74);
-  opacity: 0.6;
-}
-.kdview .pixlr-resize-mask {
-  position: absolute;
-}
-.pixlr-how-to,
-.pixlr-cannot-save {
-  padding: 20px;
-}
-.pixlr-how-to p {
-  margin-bottom: 10px;
-  width: 364px;
-}
-.pixlr-how-to .last {
-  margin-top: 20px;
-}
-.pixlr-disable-notification {
-  position: relative;
-  top: -20px;
-  float: right;
-  right: 20px;
-}
+.kdview.pixlr-editor .application-page { padding: 0 !important; }
+.kdview .pixlr-drop-target { position: absolute; background: rgba(20, 20, 17, 0.74); opacity: 0.6; }
+.kdview .pixlr-resize-mask { position: absolute; }
+.pixlr-how-to,.pixlr-cannot-save { padding: 20px; }
+.pixlr-how-to p { margin-bottom: 10px; width: 364px; }
+.pixlr-how-to .last { margin-top: 20px; }
+.pixlr-disable-notification { position: relative; top: -20px; float: right; right: 20px; }
+.pixlr-terms-button { font-size: 12px !important; }
+.pixlr-terms-header { font-size: 13px; color: #333; font-weight: bold; }
+.pixlr-terms-view { width: 400px; height: 200px; left: 50%; top: 50%; margin: -100px 0 0 -200px; border: 5px solid #CCC; border-radius: 6px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.4); }
+.pixlr-terms-view p { padding: 10px; }
+.pixlr-terms-header { padding: 10px; border-bottom: 1px solid #CCC; background: rgb(254,254,254); background: -moz-linear-gradient(top,  rgba(254,254,254,1) 0%, rgba(226,226,226,1) 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(254,254,254,1)), color-stop(100%,rgba(226,226,226,1))); background: -webkit-linear-gradient(top,  rgba(254,254,254,1) 0%,rgba(226,226,226,1) 100%); background: -ms-linear-gradient(top,  rgba(254,254,254,1) 0%,rgba(226,226,226,1) 100%); background: linear-gradient(to bottom,  rgba(254,254,254,1) 0%,rgba(226,226,226,1) 100%); }
+.pixlr-terms-checkbox { position: relative; top: -8px; left: -123px;}
+.pixlr-terms-label { position: relative; top: 2px; left: 27px; }
+.pixlr-terms-button { position: relative; left: 92px; }
+.pixlr-terms-view .confirmation { padding: 0px 10px 20px; font-weight: bold; }
