@@ -13,6 +13,7 @@
     "blocks": {
       "app": {
         "files": [
+          "./app/PixlrHook.coffee",
           "./app/PixlrSettings.coffee",
           "./app/PixlrAppView.coffee",
           "./index.coffee"
