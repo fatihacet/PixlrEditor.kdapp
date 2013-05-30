@@ -7,6 +7,8 @@ class PixlrAppView extends JView
     options.cssClass = "pixlr-container"
     
     super options
+    
+    debugger
   
     @appStorage = new AppStorage PixlrSettings.appName, '0.1'
     
@@ -18,12 +20,6 @@ class PixlrAppView extends JView
       bind       : "dragstart dragend dragover drop dragenter dragleave"
       
     @dropTarget.hide()
-    
-    @container.addSubView @resizeMask = new KDView
-      cssClass : "pixlr-resize-mask"
-      
-    @resizeMask.hide()
-    @isResizeMaskVisible = no
     
     @appStorage.fetchStorage (storage) =>
       if @appStorage.getValue('isTermsAccepted') is yes
@@ -59,34 +55,19 @@ class PixlrAppView extends JView
     @dropTarget.on "drop", (e) =>
       @openImage e.originalEvent.dataTransfer.getData 'Text'
       
-    @lastContainerWidth = @container.getWidth()
-    
-    KD.utils.repeat 100, =>
-      width = @container.getWidth()
-      if width != @lastContainerWidth
-        @resizeMask.show()
-        @lastContainerWidth = width
-        @isResizeMaskVisible = yes
-      else if @isResizeMaskVisible is yes
-        @resizeMask.hide()
-        @isResizeMaskVisible = no
-  
-  
   init: ->
-    @mem = +new Date() + KD.utils.getRandomNumber()
+    @mem = "#{+new Date()}#{KD.utils.getRandomNumber()}"
     @container.setPartial @buildIframe()
     
-    KD.getSingleton("windowController").registerListener
-      KDEventTypes : ["DragEnterOnWindow", "DragExitOnWindow"]
-      listener : @
-      callback : (pubInst, event) =>
-        @dropTarget.show()
-        @dropTarget.hide() if event.type is "drop"
+    windowController = KD.getSingleton "windowController"
+    windowController.on "DragEnterOnWindow", => @dropTarget.show()
+    windowController.on "DragExitOnWindow" , => @dropTarget.hide()
         
-    spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} """
-    healthCheck = "curl 'http://#{nickname}.koding.com/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    {userSitesDomain} = KD.config
+    spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
+    dpath             = "Sites/#{nickname}.#{domain}/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    preparation       = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} """
+    healthCheck       = "curl 'http://#{nickname}.#{domain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -133,33 +114,32 @@ class PixlrAppView extends JView
       
       modal.addSubView content
       
-
   openImage: (path) ->
-    fileExt = KD.utils.getFileExtension path 
-    if path and KD.utils.getFileType fileExt is "image"
+    fileExt           = KD.utils.getFileExtension path 
+    {userSitesDomain} = KD.config
+    log "TODO: Need to check file type"
+    if path 
       PixlrSettings.fileExt = fileExt
       timestamp  = +new Date()
-      image      = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/#{timestamp}"
+      image      = "Sites/#{nickname}.#{userSitesDomain}/website/#{timestamp}"
       
       PixlrSettings.savePath = path
       PixlrSettings.imageName = FSHelper.getFileNameFromPath path
       
       @doKiteRequest "cp #{path} #{image}", =>
-        PixlrSettings.image = "http://#{nickname}.koding.com/#{timestamp}"
+        PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/#{timestamp}"
         @refreshIframe()
         KD.utils.wait 6000, =>
           @doKiteRequest "rm #{image}"
     else 
         new KDNotificationView
           cssClass : "error"
-          title    : "Dropped file must be an image!"
-          
+          title    : "Dropped file must be an image!"    
 
   buildIframeSrc : (useEscape, isSplashView) -> 
     amp = if useEscape then '&amp;' else '&'
     img = if isSplashView then "" else "image=#{PixlrSettings.image}"
     """#{PixlrSettings.src}/?#{img}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
-
 
   buildIframe: ->
     """
@@ -168,10 +148,8 @@ class PixlrAppView extends JView
       ></iframe>
     """
     
-    
   refreshIframe: ->
     document.getElementById("pixlr").setAttribute "src", @buildIframeSrc no
-    
   
   warnUser: ->
     new KDModalView
@@ -189,7 +167,6 @@ class PixlrAppView extends JView
         </div>
       """
     
-    
   doKiteRequest: (command, callback) ->
     KD.getSingleton('kiteController').run command, (err, res) =>
       unless err
@@ -201,9 +178,7 @@ class PixlrAppView extends JView
           type     : "mini"
           duration : 3000
     
-    
   pistachio: ->
     """
-      {{> @container }}
+      {{> @container}}
     """
-    

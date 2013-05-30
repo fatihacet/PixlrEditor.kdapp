@@ -1,25 +1,14 @@
-// Compiled by Koding Servers at Thu Mar 07 2013 19:31:30 GMT-0800 (PST) in server time
-
+/* Compiled by KD on Thu May 30 2013 20:22:33 GMT+0000 (UTC) */
 (function() {
-
 /* KDAPP STARTS */
-
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrHook.coffee */
-
+/* BLOCK STARTS: /home/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrHook.coffee */
 var getHookScript,
   _this = this;
 
 getHookScript = function(SECRETKEY) {
   return "<?php\n  \n  parse_str($_SERVER['HTTP_REFERER'], $ref);\n  \n  $key=\"" + SECRETKEY + "\";\n  \n  if (array_key_exists(\"key\", $ref)  and $ref[\"key\"]  != $key) return;\n  if (array_key_exists(\"key\", $_GET) and $_GET[\"key\"] != $key) return;\n  \n  if ($_GET[\"ping\"] == \"1\") {\n    echo \"OK\";\n  }\n  else {\n    $fileName = $_GET[\"title\"] . \".\" . $_GET[\"type\"];\n    $targetPath = $ref['meta'];\n    \n    if ($fileName != $ref[\"title\"]) {\n      $exp = explode($ref[\"title\"], $targetPath);\n      $targetPath = $exp[0] . $fileName;\n    }\n    \n    touch($targetPath);\n    $fh = fopen($targetPath, 'w') or die(\"can't open file\");\n    fwrite($fh, file_get_contents($_GET[\"image\"]));\n    fclose($fh);    \n  }\n  \n?>";
 };
-
-
-/* BLOCK ENDS */
-
-
-
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrSettings.coffee */
-
+/* BLOCK STARTS: /home/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrSettings.coffee */
 var PixlrSettings, appKeyword, appName, appSlug, hookSuffix, nickname;
 
 nickname = KD.whoami().profile.nickname;
@@ -39,19 +28,12 @@ PixlrSettings = {
   src: "https://pixlr.com/" + appKeyword,
   image: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/istanbul.png",
   saveIcon: "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png",
-  targetPath: "https://" + nickname + ".koding.com/.applications/" + appSlug + "/PixlrHook/PixlrHook" + hookSuffix + ".php",
-  savePath: "/Users/" + nickname + "/Documents/" + appName + "/",
+  targetPath: "https://" + nickname + "." + KD.config.userSitesDomain + "/.applications/" + appSlug + "/PixlrHook/PixlrHook" + hookSuffix + ".php",
+  savePath: "Documents/" + appName + "/",
   imageName: "Default",
   fileExt: "jpg"
 };
-
-
-/* BLOCK ENDS */
-
-
-
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrAppView.coffee */
-
+/* BLOCK STARTS: /home/fatihacet/Applications/PixlrEditor.kdapp/app/PixlrAppView.coffee */
 var PixlrAppView, nickname,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -59,16 +41,17 @@ var PixlrAppView, nickname,
 nickname = KD.whoami().profile.nickname;
 
 PixlrAppView = (function(_super) {
-
   __extends(PixlrAppView, _super);
 
   function PixlrAppView(options) {
     var _this = this;
+
     if (options == null) {
       options = {};
     }
     options.cssClass = "pixlr-container";
     PixlrAppView.__super__.constructor.call(this, options);
+    debugger;
     this.appStorage = new AppStorage(PixlrSettings.appName, '0.1');
     this.container = new KDView({
       cssClass: "pixlr-container"
@@ -78,13 +61,9 @@ PixlrAppView = (function(_super) {
       bind: "dragstart dragend dragover drop dragenter dragleave"
     }));
     this.dropTarget.hide();
-    this.container.addSubView(this.resizeMask = new KDView({
-      cssClass: "pixlr-resize-mask"
-    }));
-    this.resizeMask.hide();
-    this.isResizeMaskVisible = false;
     this.appStorage.fetchStorage(function(storage) {
       var termsCheckboxLabel, termsView, warningConfirmButton;
+
       if (_this.appStorage.getValue('isTermsAccepted') === true) {
         return _this.init();
       } else {
@@ -118,42 +97,29 @@ PixlrAppView = (function(_super) {
     this.dropTarget.on("drop", function(e) {
       return _this.openImage(e.originalEvent.dataTransfer.getData('Text'));
     });
-    this.lastContainerWidth = this.container.getWidth();
-    KD.utils.repeat(100, function() {
-      var width;
-      width = _this.container.getWidth();
-      if (width !== _this.lastContainerWidth) {
-        _this.resizeMask.show();
-        _this.lastContainerWidth = width;
-        return _this.isResizeMaskVisible = true;
-      } else if (_this.isResizeMaskVisible === true) {
-        _this.resizeMask.hide();
-        return _this.isResizeMaskVisible = false;
-      }
-    });
   }
 
   PixlrAppView.prototype.init = function() {
-    var dpath, healthCheck, preparation, spath,
+    var dpath, healthCheck, preparation, spath, userSitesDomain, windowController,
       _this = this;
-    this.mem = +new Date() + KD.utils.getRandomNumber();
+
+    this.mem = "" + (+new Date()) + (KD.utils.getRandomNumber());
     this.container.setPartial(this.buildIframe());
-    KD.getSingleton("windowController").registerListener({
-      KDEventTypes: ["DragEnterOnWindow", "DragExitOnWindow"],
-      listener: this,
-      callback: function(pubInst, event) {
-        _this.dropTarget.show();
-        if (event.type === "drop") {
-          return _this.dropTarget.hide();
-        }
-      }
+    windowController = KD.getSingleton("windowController");
+    windowController.on("DragEnterOnWindow", function() {
+      return _this.dropTarget.show();
     });
-    spath = "/Users/" + nickname + "/Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php";
-    dpath = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/.applications/" + PixlrSettings.appSlug + "/PixlrHook/";
+    windowController.on("DragExitOnWindow", function() {
+      return _this.dropTarget.hide();
+    });
+    userSitesDomain = KD.config.userSitesDomain;
+    spath = "Applications/" + PixlrSettings.appName + ".kdapp/app/PixlrHook.php";
+    dpath = "Sites/" + nickname + "." + domain + "/website/.applications/" + PixlrSettings.appSlug + "/PixlrHook/";
     preparation = "rm -rf " + dpath + " ; mkdir -p " + dpath + " ; mkdir -p " + PixlrSettings.savePath + " ";
-    healthCheck = "curl 'http://" + nickname + ".koding.com/.applications/" + PixlrSettings.appSlug + "/PixlrHook/PixlrHook" + PixlrSettings.hookSuffix + ".php?ping=1&key=" + this.mem + "'";
+    healthCheck = "curl 'http://" + nickname + "." + domain + "/.applications/" + PixlrSettings.appSlug + "/PixlrHook/PixlrHook" + PixlrSettings.hookSuffix + ".php?ping=1&key=" + this.mem + "'";
     this.doKiteRequest("" + preparation, function() {
       var content, hookFile;
+
       content = getHookScript(_this.mem);
       hookFile = FSHelper.createFileFromPath("" + dpath + "PixlrHook" + PixlrSettings.hookSuffix + ".php");
       return hookFile.save(content, function(err) {
@@ -169,6 +135,7 @@ PixlrAppView = (function(_super) {
     });
     return this.appStorage.fetchStorage(function(storage) {
       var content, disableNotificationButton, modal, notificationCheckboxLabel;
+
       if (_this.appStorage.getValue('disableNotification') === true) {
         return;
       }
@@ -204,17 +171,20 @@ PixlrAppView = (function(_super) {
   };
 
   PixlrAppView.prototype.openImage = function(path) {
-    var fileExt, image, timestamp,
+    var fileExt, image, timestamp, userSitesDomain,
       _this = this;
+
     fileExt = KD.utils.getFileExtension(path);
-    if (path && KD.utils.getFileType(fileExt === "image")) {
+    userSitesDomain = KD.config.userSitesDomain;
+    log("TODO: Need to check file type");
+    if (path) {
       PixlrSettings.fileExt = fileExt;
       timestamp = +new Date();
-      image = "/Users/" + nickname + "/Sites/" + nickname + ".koding.com/website/" + timestamp;
+      image = "Sites/" + nickname + "." + userSitesDomain + "/website/" + timestamp;
       PixlrSettings.savePath = path;
       PixlrSettings.imageName = FSHelper.getFileNameFromPath(path);
       return this.doKiteRequest("cp " + path + " " + image, function() {
-        PixlrSettings.image = "http://" + nickname + ".koding.com/" + timestamp;
+        PixlrSettings.image = "http://" + nickname + "." + userSitesDomain + "/" + timestamp;
         _this.refreshIframe();
         return KD.utils.wait(6000, function() {
           return _this.doKiteRequest("rm " + image);
@@ -230,6 +200,7 @@ PixlrAppView = (function(_super) {
 
   PixlrAppView.prototype.buildIframeSrc = function(useEscape, isSplashView) {
     var amp, img;
+
     amp = useEscape ? '&amp;' : '&';
     img = isSplashView ? "" : "image=" + PixlrSettings.image;
     return "" + PixlrSettings.src + "/?" + img + "&title=" + PixlrSettings.imageName + "&target=" + PixlrSettings.targetPath + amp + "meta=" + PixlrSettings.savePath + "&icon=" + PixlrSettings.saveIcon + "&referer=Koding&redirect=false&type=" + PixlrSettings.fileExt + "&key=" + this.mem;
@@ -253,6 +224,7 @@ PixlrAppView = (function(_super) {
 
   PixlrAppView.prototype.doKiteRequest = function(command, callback) {
     var _this = this;
+
     return KD.getSingleton('kiteController').run(command, function(err, res) {
       if (!err) {
         return typeof callback === "function" ? callback(res) : void 0;
@@ -276,22 +248,10 @@ PixlrAppView = (function(_super) {
   return PixlrAppView;
 
 })(JView);
-
-
-/* BLOCK ENDS */
-
-
-
-/* BLOCK STARTS /Source: /Users/fatihacet/Applications/PixlrEditor.kdapp/index.coffee */
-
-
+/* BLOCK STARTS: /home/fatihacet/Applications/PixlrEditor.kdapp/index.coffee */
 (function() {
   return appView.addSubView(new PixlrAppView);
 })();
 
-
-/* BLOCK ENDS */
-
 /* KDAPP ENDS */
-
 }).call();
