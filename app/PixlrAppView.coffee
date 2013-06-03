@@ -8,8 +8,6 @@ class PixlrAppView extends JView
     
     super options
     
-    debugger
-  
     @appStorage = new AppStorage PixlrSettings.appName, '0.1'
     
     @container = new KDView
@@ -46,7 +44,7 @@ class PixlrAppView extends JView
           title    : "Yes, I know the risk"
           cssClass : "clean-gray pixlr-terms-button"
           callback : =>
-            @appStorage.setValue 'isTermsAccepted', yes if @termsCheckbox.$().is ":checked"
+            @appStorage.setValue "isTermsAccepted", yes if @termsCheckbox.$().is ":checked"
             termsView.destroy()
             @init()
             
@@ -65,9 +63,9 @@ class PixlrAppView extends JView
         
     {userSitesDomain} = KD.config
     spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath             = "Sites/#{nickname}.#{domain}/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation       = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} """
-    healthCheck       = "curl 'http://#{nickname}.#{domain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    dpath             = "Sites/#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath}"
+    healthCheck       = "curl 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -115,21 +113,22 @@ class PixlrAppView extends JView
       modal.addSubView content
       
   openImage: (path) ->
-    fileExt           = KD.utils.getFileExtension path 
+    path              = path.replace /^\[\w+\]/, ""
+    fileExt           = @getFileExtension path 
     {userSitesDomain} = KD.config
-    log "TODO: Need to check file type"
-    if path 
+    imageExtensions   = [ "png","gif","jpg","jpeg","bmp","svg","tif","tiff" ]
+    if fileExt and imageExtensions.indexOf(fileExt) > -1
       PixlrSettings.fileExt = fileExt
-      timestamp  = +new Date()
-      image      = "Sites/#{nickname}.#{userSitesDomain}/website/#{timestamp}"
+      timestamp  = Date.now()
+      image      = "Sites/#{nickname}.#{userSitesDomain}/#{timestamp}"
       
       PixlrSettings.savePath = path
       PixlrSettings.imageName = FSHelper.getFileNameFromPath path
       
-      @doKiteRequest "cp #{path} #{image}", =>
+      @doKiteRequest "cp #{path} #{image}", (res) =>
         PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/#{timestamp}"
         @refreshIframe()
-        KD.utils.wait 6000, =>
+        KD.utils.wait 12000, =>
           @doKiteRequest "rm #{image}"
     else 
         new KDNotificationView
@@ -158,7 +157,7 @@ class PixlrAppView extends JView
       content: """
         <div class="pixlr-cannot-save">
           Pixlr cannot access the little php file it needs 
-          to be able to save files (./website/PixlrHook/PixlrHook.php)
+          to be able to save files (./Sites/your-domain/PixlrHook/PixlrHook.php)
           You either deleted it, or made it inaccessible somehow (think .htaccess)
           
           Reinstalling Pixlr might fix it, but not guaranteed.
@@ -166,6 +165,11 @@ class PixlrAppView extends JView
           If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)
         </div>
       """
+      
+  getFileExtension: (path) -> 
+    fileName = path or ""
+    [name, extension...]  = fileName.split "."
+    extension = if extension.length is 0 then "" else extension.last
     
   doKiteRequest: (command, callback) ->
     KD.getSingleton('kiteController').run command, (err, res) =>
