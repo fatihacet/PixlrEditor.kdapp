@@ -8,7 +8,7 @@ class PixlrAppView extends JView
     
     super options
     
-    @appStorage = new AppStorage PixlrSettings.appName, '0.1'
+    @appStorage = new AppStorage PixlrSettings.appName, "0.1"
     
     @container = new KDView
       cssClass: "pixlr-container"
@@ -20,7 +20,7 @@ class PixlrAppView extends JView
     @dropTarget.hide()
     
     @appStorage.fetchStorage (storage) =>
-      if @appStorage.getValue('isTermsAccepted') is yes
+      if @appStorage.getValue("isTermsAccepted") is yes
         @init()
       else 
         termsView = new KDView
@@ -51,10 +51,10 @@ class PixlrAppView extends JView
         @container.addSubView termsView
     
     @dropTarget.on "drop", (e) =>
-      @openImage e.originalEvent.dataTransfer.getData 'Text'
+      @openImage e.originalEvent.dataTransfer.getData "Text"
       
   init: ->
-    @mem = "#{+new Date()}#{KD.utils.getRandomNumber()}"
+    @mem = "#{Date.now()}#{KD.utils.getRandomNumber()}"
     @container.setPartial @buildIframe()
     
     windowController = KD.getSingleton "windowController"
@@ -63,9 +63,9 @@ class PixlrAppView extends JView
         
     {userSitesDomain} = KD.config
     spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath             = "Sites/#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    dpath             = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
     preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath}"
-    healthCheck       = "curl 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    healthCheck       = "curl --silent 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -76,7 +76,7 @@ class PixlrAppView extends JView
           @warnUser() unless res is "OK"
   
     @appStorage.fetchStorage (storage) =>
-      return if @appStorage.getValue('disableNotification') is yes
+      return if @appStorage.getValue("disableNotification") is yes
       
       content = new KDView
         partial: """
@@ -102,7 +102,7 @@ class PixlrAppView extends JView
         title    : "Close"
         cssClass : "clean-gray"
         callback : =>
-          @appStorage.setValue 'disableNotification', yes if @notificationCheckbox.$().is ":checked"
+          @appStorage.setValue "disableNotification", yes if @notificationCheckbox.$().is ":checked"
           modal.destroy()
       
       modal = new KDModalView

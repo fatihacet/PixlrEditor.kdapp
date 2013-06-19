@@ -6,6 +6,7 @@
   "path": "~/Applications/PixlrEditor.kdapp",
   "homepage": "fatihacet.koding.com/pixlreditor",
   "author": "Fatih Acet",
+  "authorNick": "fatihacet",
   "repository": "git://github.com/fatihacet/pixlreditor.kdapp.git",
   "description": "Pixlr Editor: Pixlr image editing application",
   "category": "web-app",
