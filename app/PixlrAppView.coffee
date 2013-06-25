@@ -65,9 +65,9 @@ class PixlrAppView extends JView
     {userSitesDomain} = KD.config
     spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
     dpath             = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath}"
+    preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath}"
     healthCheck       = "curl --silent 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
-    saveRequirements  = "mkdir -p #{PixlrSettings.savePath} ; chmod 777 #{PixlrSettings.savePath}"
+    setPermisasyon    = "chmod 777 #{PixlrSettings.savePath}"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -76,11 +76,10 @@ class PixlrAppView extends JView
         return @warnUser() if err
         @doKiteRequest "#{healthCheck}", (res) =>
           @warnUser() unless res is "OK"
-          @doKiteRequest "#{saveRequirements}", (res) =>
-            folder = FSHelper.createFileFromPath "#{PixlrSettings.savePath}", "folder"
-            folder.save (err, res) =>
+          folder = FSHelper.createFileFromPath "#{PixlrSettings.savePath}", "folder"
+          folder.save (err, res) =>
+            @doKiteRequest "#{setPermisasyon}", (res) =>
               @registerFolderWatcher()
-  
     @appStorage.fetchStorage (storage) =>
       return if @appStorage.getValue("disableNotification") is yes
       
@@ -119,20 +118,19 @@ class PixlrAppView extends JView
       modal.addSubView content
       
   openImage: (path) ->
-    path              = path.replace /^\[\w+\]/, ""
+    path              = FSHelper.plainPath path
     fileExt           = @getFileExtension path 
     {userSitesDomain} = KD.config
     imageExtensions   = [ "png","gif","jpg","jpeg","bmp","svg","tif","tiff" ]
     if fileExt and imageExtensions.indexOf(fileExt) > -1
-      PixlrSettings.fileExt = fileExt
-      timestamp  = Date.now()
-      image      = "Sites/#{nickname}.#{userSitesDomain}/#{timestamp}"
-      
-      PixlrSettings.savePath = path
+      PixlrSettings.fileExt   = fileExt
+      timestamp               = Date.now()
+      image                   = "Web/.applications/#{PixlrSettings.appSlug}/#{timestamp}"
+      # PixlrSettings.savePath  = path
       PixlrSettings.imageName = FSHelper.getFileNameFromPath path
       
       @doKiteRequest "cp #{path} #{image}", (res) =>
-        PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/#{timestamp}"
+        PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/#{timestamp}"
         @refreshIframe()
         KD.utils.wait 12000, =>
           @doKiteRequest "rm #{image}"
@@ -178,18 +176,27 @@ class PixlrAppView extends JView
     extension = if extension.length is 0 then "" else extension.last
     
   registerFolderWatcher: ->
-    vmName = KD.getSingleton "vmController"
+    vmName = KD.singletons.vmController.defaultVmName
     path   = PixlrSettings.savePath
-    kc.run
+    kiteController.run
       kiteName   : "os"
       method     : "fs.readDirectory"
       vmName     : vmName
       withArgs   :
         path     : path
         onChange : (change) =>
-          console.log "On #{vmName} VM at this path: #{path} this happened:", change
+          # console.log "On #{vmName} VM at this path: #{path} this happened:", change
+          @moveFile change.file.name
     , (err, response) =>
-       console.log "This is the response:", response
+      # console.log "This is the response:", response
+      
+  moveFile: (fileName) ->
+    @doKiteRequest "cp #{PixlrSettings.savePath}#{fileName} #{PixlrSettings.saveDir}", (res) =>
+      new KDNotificationView
+        type     : "mini"
+        cssClass : "success"
+        partial  : "Your file has been saved into #{PixlrSettings.relSaveDir}"
+        duration : 4000
     
   doKiteRequest: (command, callback) ->
     kiteController.run command, (err, res) =>

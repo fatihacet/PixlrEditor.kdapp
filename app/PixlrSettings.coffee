@@ -14,6 +14,8 @@ PixlrSettings =
   saveIcon   : "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png"
   targetPath : "https://#{nickname}.#{KD.config.userSitesDomain}/.applications/#{appSlug}/PixlrHook/PixlrHook#{hookSuffix}.php"
   savePath   : "/tmp/PixlrEditor#{hookSuffix}/"
+  saveDir    : "/home/#{nickname}/Documents/#{appName}"
+  relSaveDir : "~/Documents/#{appName}"
   imageName  : "Default"
   fileExt    : "jpg"
   
