@@ -1,4 +1,5 @@
-{nickname} = KD.whoami().profile
+{nickname}     = KD.whoami().profile
+kiteController = KD.getSingleton "kiteController"
 
 class PixlrAppView extends JView
 
@@ -7,8 +8,8 @@ class PixlrAppView extends JView
     options.cssClass = "pixlr-container"
     
     super options
-  
-    @appStorage = new AppStorage PixlrSettings.appName, '0.1'
+    
+    @appStorage = new AppStorage PixlrSettings.appName, "0.1"
     
     @container = new KDView
       cssClass: "pixlr-container"
@@ -19,14 +20,8 @@ class PixlrAppView extends JView
       
     @dropTarget.hide()
     
-    @container.addSubView @resizeMask = new KDView
-      cssClass : "pixlr-resize-mask"
-      
-    @resizeMask.hide()
-    @isResizeMaskVisible = no
-    
     @appStorage.fetchStorage (storage) =>
-      if @appStorage.getValue('isTermsAccepted') is yes
+      if @appStorage.getValue("isTermsAccepted") is yes
         @init()
       else 
         termsView = new KDView
@@ -50,43 +45,29 @@ class PixlrAppView extends JView
           title    : "Yes, I know the risk"
           cssClass : "clean-gray pixlr-terms-button"
           callback : =>
-            @appStorage.setValue 'isTermsAccepted', yes if @termsCheckbox.$().is ":checked"
+            @appStorage.setValue "isTermsAccepted", yes if @termsCheckbox.$().is ":checked"
             termsView.destroy()
             @init()
             
         @container.addSubView termsView
     
     @dropTarget.on "drop", (e) =>
-      @openImage e.originalEvent.dataTransfer.getData 'Text'
+      @openImage e.originalEvent.dataTransfer.getData "Text"
       
-    @lastContainerWidth = @container.getWidth()
-    
-    KD.utils.repeat 100, =>
-      width = @container.getWidth()
-      if width != @lastContainerWidth
-        @resizeMask.show()
-        @lastContainerWidth = width
-        @isResizeMaskVisible = yes
-      else if @isResizeMaskVisible is yes
-        @resizeMask.hide()
-        @isResizeMaskVisible = no
-  
-  
   init: ->
-    @mem = +new Date() + KD.utils.getRandomNumber()
+    @mem = "#{Date.now()}#{KD.utils.getRandomNumber()}"
     @container.setPartial @buildIframe()
     
-    KD.getSingleton("windowController").registerListener
-      KDEventTypes : ["DragEnterOnWindow", "DragExitOnWindow"]
-      listener : @
-      callback : (pubInst, event) =>
-        @dropTarget.show()
-        @dropTarget.hide() if event.type is "drop"
+    windowController = KD.getSingleton "windowController"
+    windowController.on "DragEnterOnWindow", => @dropTarget.show()
+    windowController.on "DragExitOnWindow" , => @dropTarget.hide()
         
-    spath       = "/Users/#{nickname}/Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath       = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation = """rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath} """
-    healthCheck = "curl 'http://#{nickname}.koding.com/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    {userSitesDomain} = KD.config
+    spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
+    dpath             = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath}"
+    healthCheck       = "curl --silent 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    saveRequirements  = "mkdir -p #{PixlrSettings.savePath} ; chmod 777 #{PixlrSettings.savePath}"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -95,9 +76,13 @@ class PixlrAppView extends JView
         return @warnUser() if err
         @doKiteRequest "#{healthCheck}", (res) =>
           @warnUser() unless res is "OK"
+          @doKiteRequest "#{saveRequirements}", (res) =>
+            folder = FSHelper.createFileFromPath "#{PixlrSettings.savePath}", "folder"
+            folder.save (err, res) =>
+              @registerFolderWatcher()
   
     @appStorage.fetchStorage (storage) =>
-      return if @appStorage.getValue('disableNotification') is yes
+      return if @appStorage.getValue("disableNotification") is yes
       
       content = new KDView
         partial: """
@@ -123,7 +108,7 @@ class PixlrAppView extends JView
         title    : "Close"
         cssClass : "clean-gray"
         callback : =>
-          @appStorage.setValue 'disableNotification', yes if @notificationCheckbox.$().is ":checked"
+          @appStorage.setValue "disableNotification", yes if @notificationCheckbox.$().is ":checked"
           modal.destroy()
       
       modal = new KDModalView
@@ -133,33 +118,33 @@ class PixlrAppView extends JView
       
       modal.addSubView content
       
-
   openImage: (path) ->
-    fileExt = KD.utils.getFileExtension path 
-    if path and KD.utils.getFileType fileExt is "image"
+    path              = path.replace /^\[\w+\]/, ""
+    fileExt           = @getFileExtension path 
+    {userSitesDomain} = KD.config
+    imageExtensions   = [ "png","gif","jpg","jpeg","bmp","svg","tif","tiff" ]
+    if fileExt and imageExtensions.indexOf(fileExt) > -1
       PixlrSettings.fileExt = fileExt
-      timestamp  = +new Date()
-      image      = "/Users/#{nickname}/Sites/#{nickname}.koding.com/website/#{timestamp}"
+      timestamp  = Date.now()
+      image      = "Sites/#{nickname}.#{userSitesDomain}/#{timestamp}"
       
       PixlrSettings.savePath = path
       PixlrSettings.imageName = FSHelper.getFileNameFromPath path
       
-      @doKiteRequest "cp #{path} #{image}", =>
-        PixlrSettings.image = "http://#{nickname}.koding.com/#{timestamp}"
+      @doKiteRequest "cp #{path} #{image}", (res) =>
+        PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/#{timestamp}"
         @refreshIframe()
-        KD.utils.wait 6000, =>
+        KD.utils.wait 12000, =>
           @doKiteRequest "rm #{image}"
     else 
         new KDNotificationView
           cssClass : "error"
-          title    : "Dropped file must be an image!"
-          
+          title    : "Dropped file must be an image!"    
 
   buildIframeSrc : (useEscape, isSplashView) -> 
     amp = if useEscape then '&amp;' else '&'
     img = if isSplashView then "" else "image=#{PixlrSettings.image}"
     """#{PixlrSettings.src}/?#{img}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
-
 
   buildIframe: ->
     """
@@ -168,10 +153,8 @@ class PixlrAppView extends JView
       ></iframe>
     """
     
-    
   refreshIframe: ->
     document.getElementById("pixlr").setAttribute "src", @buildIframeSrc no
-    
   
   warnUser: ->
     new KDModalView
@@ -180,7 +163,7 @@ class PixlrAppView extends JView
       content: """
         <div class="pixlr-cannot-save">
           Pixlr cannot access the little php file it needs 
-          to be able to save files (./website/PixlrHook/PixlrHook.php)
+          to be able to save files (./Sites/your-domain/PixlrHook/PixlrHook.php)
           You either deleted it, or made it inaccessible somehow (think .htaccess)
           
           Reinstalling Pixlr might fix it, but not guaranteed.
@@ -188,10 +171,28 @@ class PixlrAppView extends JView
           If you want this be fixed, you should convince someone to continue developing Pixlr.kdapp :)
         </div>
       """
+      
+  getFileExtension: (path) -> 
+    fileName = path or ""
+    [name, extension...]  = fileName.split "."
+    extension = if extension.length is 0 then "" else extension.last
     
+  registerFolderWatcher: ->
+    vmName = KD.getSingleton "vmController"
+    path   = PixlrSettings.savePath
+    kc.run
+      kiteName   : "os"
+      method     : "fs.readDirectory"
+      vmName     : vmName
+      withArgs   :
+        path     : path
+        onChange : (change) =>
+          console.log "On #{vmName} VM at this path: #{path} this happened:", change
+    , (err, response) =>
+       console.log "This is the response:", response
     
   doKiteRequest: (command, callback) ->
-    KD.getSingleton('kiteController').run command, (err, res) =>
+    kiteController.run command, (err, res) =>
       unless err
         callback? res
       else
@@ -201,9 +202,7 @@ class PixlrAppView extends JView
           type     : "mini"
           duration : 3000
     
-    
   pistachio: ->
     """
-      {{> @container }}
+      {{> @container}}
     """
-    
