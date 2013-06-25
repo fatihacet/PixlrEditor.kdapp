@@ -1,4 +1,5 @@
-{nickname} = KD.whoami().profile
+{nickname}     = KD.whoami().profile
+kiteController = KD.getSingleton "kiteController"
 
 class PixlrAppView extends JView
 
@@ -66,6 +67,7 @@ class PixlrAppView extends JView
     dpath             = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
     preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.savePath}"
     healthCheck       = "curl --silent 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    saveRequirements  = "mkdir -p #{PixlrSettings.savePath} ; chmod 777 #{PixlrSettings.savePath}"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -74,6 +76,10 @@ class PixlrAppView extends JView
         return @warnUser() if err
         @doKiteRequest "#{healthCheck}", (res) =>
           @warnUser() unless res is "OK"
+          @doKiteRequest "#{saveRequirements}", (res) =>
+            folder = FSHelper.createFileFromPath "#{PixlrSettings.savePath}", "folder"
+            folder.save (err, res) =>
+              @registerFolderWatcher()
   
     @appStorage.fetchStorage (storage) =>
       return if @appStorage.getValue("disableNotification") is yes
@@ -171,8 +177,22 @@ class PixlrAppView extends JView
     [name, extension...]  = fileName.split "."
     extension = if extension.length is 0 then "" else extension.last
     
+  registerFolderWatcher: ->
+    vmName = KD.getSingleton "vmController"
+    path   = PixlrSettings.savePath
+    kc.run
+      kiteName   : "os"
+      method     : "fs.readDirectory"
+      vmName     : vmName
+      withArgs   :
+        path     : path
+        onChange : (change) =>
+          console.log "On #{vmName} VM at this path: #{path} this happened:", change
+    , (err, response) =>
+       console.log "This is the response:", response
+    
   doKiteRequest: (command, callback) ->
-    KD.getSingleton('kiteController').run command, (err, res) =>
+    kiteController.run command, (err, res) =>
       unless err
         callback? res
       else
