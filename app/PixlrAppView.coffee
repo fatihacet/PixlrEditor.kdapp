@@ -59,15 +59,13 @@ class PixlrAppView extends JView
     @container.setPartial @buildIframe()
     
     windowController = KD.getSingleton "windowController"
+    dpath            = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
+    preparation      = "rm -rf #{dpath} ; mkdir -p #{dpath} ; mkdir -p #{PixlrSettings.saveDir}"
+    healthCheck      = "curl --silent 'http://#{KD.getSingleton('vmController').defaultVmName}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
+    setPermisasyon   = "chmod 777 #{PixlrSettings.savePath}"
+    
     windowController.on "DragEnterOnWindow", => @dropTarget.show()
     windowController.on "DragExitOnWindow" , => @dropTarget.hide()
-        
-    {userSitesDomain} = KD.config
-    spath             = "Applications/#{PixlrSettings.appName}.kdapp/app/PixlrHook.php" # source path of hook file
-    dpath             = "Web/.applications/#{PixlrSettings.appSlug}/PixlrHook/" # destination path that hook file will be copied
-    preparation       = "rm -rf #{dpath} ; mkdir -p #{dpath}"
-    healthCheck       = "curl --silent 'http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/PixlrHook/PixlrHook#{PixlrSettings.hookSuffix}.php?ping=1&key=#{@mem}'"
-    setPermisasyon    = "chmod 777 #{PixlrSettings.savePath}"
     
     @doKiteRequest "#{preparation}", =>
       content = getHookScript @mem
@@ -131,7 +129,7 @@ class PixlrAppView extends JView
       PixlrSettings.imageName = FSHelper.getFileNameFromPath path
       
       @doKiteRequest "cp #{path} #{image}", (res) =>
-        PixlrSettings.image = "http://#{nickname}.#{userSitesDomain}/.applications/#{PixlrSettings.appSlug}/#{timestamp}"
+        PixlrSettings.image = "http://#{KD.getSingleton('vmController').defaultVmName}/.applications/#{PixlrSettings.appSlug}/#{timestamp}"
         @refreshIframe()
         KD.utils.wait 12000, =>
           @doKiteRequest "rm #{image}"
