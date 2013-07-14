@@ -80,6 +80,7 @@ class PixlrAppView extends JView
           folder.save (err, res) =>
             @doKiteRequest "#{setPermisasyon}", (res) =>
               @registerFolderWatcher()
+              
     @appStorage.fetchStorage (storage) =>
       return if @appStorage.getValue("disableNotification") is yes
       
@@ -140,8 +141,8 @@ class PixlrAppView extends JView
           title    : "Dropped file must be an image!"    
 
   buildIframeSrc : (useEscape, isSplashView) -> 
-    amp = if useEscape then '&amp;' else '&'
-    img = if isSplashView then "" else "image=#{PixlrSettings.image}"
+    amp = if useEscape    then '&amp;' else '&'
+    img = if isSplashView then ""      else "image=#{PixlrSettings.image}"
     """#{PixlrSettings.src}/?#{img}&title=#{PixlrSettings.imageName}&target=#{PixlrSettings.targetPath}#{amp}meta=#{PixlrSettings.savePath}&icon=#{PixlrSettings.saveIcon}&referer=Koding&redirect=false&type=#{PixlrSettings.fileExt}&key=#{@mem}"""
 
   buildIframe: ->
@@ -185,17 +186,14 @@ class PixlrAppView extends JView
       withArgs   :
         path     : path
         onChange : (change) =>
-          # console.log "On #{vmName} VM at this path: #{path} this happened:", change
           @moveFile change.file.name
-    , (err, response) =>
-      # console.log "This is the response:", response
       
   moveFile: (fileName) ->
     @doKiteRequest "cp #{PixlrSettings.savePath}#{fileName} #{PixlrSettings.saveDir}", (res) =>
       new KDNotificationView
         type     : "mini"
         cssClass : "success"
-        partial  : "Your file has been saved into #{PixlrSettings.relSaveDir}"
+        title    : "Your file has been saved into #{PixlrSettings.relSaveDir}"
         duration : 4000
     
   doKiteRequest: (command, callback) ->

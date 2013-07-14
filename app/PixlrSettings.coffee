@@ -9,10 +9,9 @@ PixlrSettings =
   hookSuffix : hookSuffix
   appName    : appName
   appSlug    : appSlug
-  src        : "https://pixlr.com/#{appKeyword}"
-  image      : "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/istanbul.png"
+  src        : "http://pixlr.com/#{appKeyword}"
   saveIcon   : "https://app.koding.com/fatihacet/Pixlr%20Editor/latest/resources/default/koding16.png"
-  targetPath : "https://#{nickname}.#{KD.config.userSitesDomain}/.applications/#{appSlug}/PixlrHook/PixlrHook#{hookSuffix}.php"
+  targetPath : "http://#{KD.getSingleton('vmController').defaultVmName}/.applications/#{appSlug}/PixlrHook/PixlrHook#{hookSuffix}.php"
   savePath   : "/tmp/PixlrEditor#{hookSuffix}/"
   saveDir    : "/home/#{nickname}/Documents/#{appName}"
   relSaveDir : "~/Documents/#{appName}"
