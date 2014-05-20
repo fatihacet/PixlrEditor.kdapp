@@ -27,5 +27,5 @@ git clone https://github.com/fatihacet/PixlrEditor.kdapp.git
 ### Adjusting Brightness & Contrast
 ![](https://raw.github.com/fatihacet/PixlrEditor.kdapp/master/resources/screenshots/3.png)
 
-### Save Dialog ( Save back to Koing )
+### Save Dialog ( Save to your Koding VM )
 ![](https://raw.github.com/fatihacet/PixlrEditor.kdapp/master/resources/screenshots/4.png)
